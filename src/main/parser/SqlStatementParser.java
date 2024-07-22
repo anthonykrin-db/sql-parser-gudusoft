@@ -6,10 +6,22 @@ import gudusoft.gsqlparser.TGSqlParser;
 import gudusoft.gsqlparser.nodes.TObjectName;
 import gudusoft.gsqlparser.nodes.TTable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SqlStatementParser {
+
+        public List<ParserResult> parseTokens(List<String> sqlList){
+            List<ParserResult> resultList=new ArrayList<>();
+            for(int i=0;i<sqlList.size();i++) {
+                String sql=sqlList.get(i);
+                ParserResult result=parseTokens(sql);
+                resultList.add(result);
+            }
+            return resultList;
+        }
 
         public ParserResult parseTokens(String sql)
         {

@@ -1,12 +1,11 @@
-package test;
-
-
 import org.junit.Assert;
 import org.junit.Test;
 import parser.ColumnToken;
 import parser.ParserResult;
 import parser.SqlStatementParser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.fail;
@@ -78,6 +77,25 @@ public class SqlStatementParserTest {
             System.out.println(result.getErrMsg());
             // Fail the test if parsing is unsuccessful
             fail("SQL statement parsing failed");
+        }
+    }
+
+    @Test
+    public void testSimpleStatements() {
+        List<String> sqlStatements = new ArrayList<>();
+
+        for (int i = 0; i < 100; i++) {
+            String sql = "select a" + i + ",b" + i + ",c" + i + ",DATETOSTRING(date_attr_name,'mm/dd/yyyy') from x.tbl_a";
+            sqlStatements.add(sql);
+        }
+        SqlStatementParser parser = new SqlStatementParser();
+        List<ParserResult> results = parser.parseTokens(sqlStatements);
+        for (int i = 0; i < results.size(); i++) {
+            ParserResult result = results.get(i);
+            if (result.isSuccess()) {
+                Set tokens = result.getTokens();
+                Assert.assertTrue("Found 5 tokens", tokens.size()==5);
+            }
         }
     }
 }
