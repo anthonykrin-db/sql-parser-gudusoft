@@ -81,6 +81,51 @@ public class SqlStatementParserTest {
     }
 
     @Test
+    public void testFailedStatement() {
+        String sql = "select cs.DeviceId,cs.MessageDateTime,concat_ws('\\',string(int(cs.BloodPressureSystolic)),string(int(cs.BloodPressureDiastolic))) as BloodPressure, cs.BodyTemperature, cs.HeartRateVariability from iomt_demo.charts_silver cs where cs.DeviceId = '1qsi9p8t5l2'  and cs.HeartRate is not null  and cs.MessageDateHour = date_format(current_timestamp(), 'yyyy-MM-dd HH:00:00') order by cs.MessageDateTime desc LIMIT 1000";
+
+        SqlStatementParser parser = new SqlStatementParser();
+        ParserResult result = parser.parseTokens(sql);
+        if (result.isSuccess()) {
+            Set<ColumnToken> tokens=result.getTokens();
+            for (ColumnToken token : tokens) {
+                System.out.println(token);
+            }
+
+            Assert.assertTrue("Parsed properly.",true);
+            // You can also add assertions here to validate the parsing result
+            // For example, you can check that specific tokens or structures were parsed correctly.
+        } else {
+            System.out.println(result.getErrMsg());
+            // Fail the test if parsing is unsuccessful
+            fail("SQL statement parsing failed");
+        }
+    }
+
+    @Test
+    public void testFailedStatement2() {
+        String sql = "select cs.DeviceId,cs.MessageDateTime,concat_ws('\\\\',string(int(cs.BloodPressureSystolic)),string(int(cs.BloodPressureDiastolic))) as BloodPressure, cs.BodyTemperature, cs.HeartRateVariability from iomt_demo.charts_silver cs where cs.DeviceId = '1qsi9p8t5l2'  and cs.HeartRate is not null  and cs.MessageDateHour = date_format(current_timestamp(), 'yyyy-MM-dd HH:00:00') order by cs.MessageDateTime desc LIMIT 1000";
+
+        SqlStatementParser parser = new SqlStatementParser();
+        ParserResult result = parser.parseTokens(sql);
+        if (result.isSuccess()) {
+            Set<ColumnToken> tokens=result.getTokens();
+            for (ColumnToken token : tokens) {
+                System.out.println(token);
+            }
+
+            Assert.assertTrue("Parsed properly.",true);
+            // You can also add assertions here to validate the parsing result
+            // For example, you can check that specific tokens or structures were parsed correctly.
+        } else {
+            System.out.println(result.getErrMsg());
+            // Fail the test if parsing is unsuccessful
+            fail("SQL statement parsing failed");
+        }
+    }
+
+
+    @Test
     public void testSimpleStatements() {
         List<String> sqlStatements = new ArrayList<>();
 
@@ -89,7 +134,7 @@ public class SqlStatementParserTest {
             sqlStatements.add(sql);
         }
         SqlStatementParser parser = new SqlStatementParser();
-        List<ParserResult> results = parser.parseTokens(sqlStatements);
+        List<ParserResult> results = parser.parseMultipleTokens(sqlStatements);
         for (int i = 0; i < results.size(); i++) {
             ParserResult result = results.get(i);
             if (result.isSuccess()) {

@@ -13,11 +13,11 @@ import java.util.Set;
 
 public class SqlStatementParser {
 
-        public List<ParserResult> parseTokens(List<String> sqlList){
+        public List<ParserResult> parseMultipleTokens(List<String> sqlList){
             List<ParserResult> resultList=new ArrayList<>();
             for(int i=0;i<sqlList.size();i++) {
-                String sql=sqlList.get(i);
-                ParserResult result=parseTokens(sql);
+                String sql=cleanupSql(sqlList.get(i));
+                ParserResult result= parseTokens(sql);
                 resultList.add(result);
             }
             return resultList;
@@ -27,7 +27,7 @@ public class SqlStatementParser {
         {
             ParserResult result=new ParserResult();
             TGSqlParser sqlparser = new TGSqlParser(EDbVendor.dbvdatabricks);
-            sqlparser.sqltext  = sql;
+            sqlparser.sqltext  = cleanupSql(sql);
 
             int ret = sqlparser.parse();
             if (ret == 0){
@@ -38,10 +38,46 @@ public class SqlStatementParser {
                 result.setSuccess(true);
             }else{
                 result.setSuccess(false);
-                result.setErrMsg(sqlparser.getErrormessage());
+                result.setErrMsg(sqlparser.getErrormessage()+System.lineSeparator()+sql);
             }
             return result;
 
+        }
+
+        public static String cleanupSql(String sql) {
+            if (sql == null || sql.isEmpty()) {
+                return sql;
+            }
+
+            StringBuilder cleaned = new StringBuilder();
+            boolean inQuotes = false;
+            char previousChar = '\0';
+
+            for (int i = 0; i < sql.length(); i++) {
+                char currentChar = sql.charAt(i);
+
+                if (currentChar == '\'' && previousChar != '\\') {
+                    inQuotes = !inQuotes;
+                }
+
+                if (inQuotes) {
+                    if (currentChar == '\\') {
+                        if (i + 1 < sql.length() && sql.charAt(i + 1) == '\\') {
+                            cleaned.append("\\\\");
+                            i++; // Skip the next backslash
+                        } else {
+                            cleaned.append("\\\\");
+                        }
+                    } else {
+                        cleaned.append(currentChar);
+                    }
+                } else {
+                    cleaned.append(currentChar);
+                }
+                previousChar = currentChar;
+            }
+
+            return cleaned.toString();
         }
 
         protected static void iterateStmt(TCustomSqlStatement stmt,Set<ColumnToken> columnExpressions){
